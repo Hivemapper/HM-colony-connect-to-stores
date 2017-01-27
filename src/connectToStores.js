@@ -25,7 +25,7 @@ function connectToStores(Spec, Component = Spec) {
 
   if (!isFunction(Spec.getPropsFromStores)) {
     Spec.getPropsFromStores = () => {
-      return assign({}, Spec.getStores().map((store) => {
+      return assign({}, ...Spec.getStores().map((store) => {
         return store.getState();
       }));
     }
