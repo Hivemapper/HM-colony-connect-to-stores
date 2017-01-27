@@ -19,9 +19,6 @@ function connectToStores(Spec, Component = Spec) {
   if (!isFunction(Spec.getStores)) {
     throw new Error('connectToStores() expects the wrapped component to have a static getStores() method')
   }
-  // if (!isFunction(Spec.getPropsFromStores)) {
-  //   throw new Error('connectToStores() expects the wrapped component to have a static getPropsFromStores() method')
-  // }
 
   if (!isFunction(Spec.getPropsFromStores)) {
     Spec.getPropsFromStores = () => {
