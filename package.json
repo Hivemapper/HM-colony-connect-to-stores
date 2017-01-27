@@ -2,7 +2,7 @@
   "name": "connect-to-stores",
   "version": "0.0.1",
   "description": "",
-  "main": "connectToStores.js",
+  "main": "lib/connectToStores.js",
   "dependencies": {},
   "devDependencies": {
     "alt": "0.17.1",
