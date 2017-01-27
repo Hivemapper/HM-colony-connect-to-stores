@@ -2,7 +2,7 @@
   "name": "connect-to-stores",
   "version": "0.0.1",
   "description": "",
-  "main": "lib/connectToStores",
+  "main": "connectToStores.js",
   "dependencies": {},
   "devDependencies": {
     "alt": "0.17.1",
@@ -27,10 +27,6 @@
     "rimraf": "^2.3.2",
     "sinon": "^1.14.0",
     "webpack": "^1.9.12"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/altjs/connect-to-stores.git"
   },
   "authors": [
     "Josh Perez <josh@goatslacker.com>",
