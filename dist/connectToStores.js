@@ -69,6 +69,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
 	var _react = __webpack_require__(2);
 
 	var _react2 = _interopRequireDefault(_react);
@@ -102,8 +104,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (!isFunction(Spec.getStores)) {
 	      throw new Error('connectToStores() expects the wrapped component to have a static getStores() method');
 	    }
+
 	    if (!isFunction(Spec.getPropsFromStores)) {
-	      throw new Error('connectToStores() expects the wrapped component to have a static getPropsFromStores() method');
+	      Spec.getPropsFromStores = function () {
+	        return assign.apply(undefined, [{}].concat(_toConsumableArray(Spec.getStores().map(function (store) {
+	          return store.getState();
+	        }))));
+	      };
 	    }
 
 	    var StoreConnection = _react2['default'].createClass({
