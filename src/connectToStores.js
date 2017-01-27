@@ -25,9 +25,9 @@ function connectToStores(Spec, Component = Spec) {
 
   const StoreConnection = React.createClass({
     getPropsFromStores() {
-      return assign({}, this.getStores().map(store) => {
+      return assign({}, this.getStores().map((store) => {
         return store.getState();
-      });
+      }));
     },
 
     getInitialState() {
