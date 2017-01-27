@@ -136,11 +136,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	      },
 
 	      onChange: function onChange() {
-	        this.setState(Spec.getPropsFromStores(this.props, this.context));
+	        try {
+	          this.setState(Spec.getPropsFromStores(this.props, this.context));
+	        } catch (e) {
+	          console.error(e);
+	          if (typeof Rollbar !== 'undefined') {
+	            Rollbar.error(e);
+	          }
+	        }
 	      },
 
 	      render: function render() {
-	        return _react2['default'].createElement(Component, assign({}, this.props, this.state));
+	        try {
+	          return _react2['default'].createElement(Component, assign({}, this.props, this.state));
+	        } catch (e) {
+	          console.error(e);
+	          if (typeof Rollbar !== 'undefined') {
+	            Rollbar.error(e);
+	          }
+	        }
 	      }
 	    });
 

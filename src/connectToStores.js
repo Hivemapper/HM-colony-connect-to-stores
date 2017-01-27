@@ -47,14 +47,28 @@ function connectToStores(Spec, Component = Spec) {
     },
 
     onChange() {
-      this.setState(Spec.getPropsFromStores(this.props, this.context))
+      try {
+        this.setState(Spec.getPropsFromStores(this.props, this.context));
+      } catch (e) {
+        console.error(e);
+        if (typeof Rollbar !== 'undefined') {
+          Rollbar.error(e);
+        }
+      }
     },
 
     render() {
-      return React.createElement(
-        Component,
-        assign({}, this.props, this.state)
-      )
+      try {
+        return React.createElement(
+          Component,
+          assign({}, this.props, this.state)
+        );
+      } catch (e) {
+        console.error(e);
+        if (typeof Rollbar !== 'undefined') {
+          Rollbar.error(e);
+        }
+      }
     }
   })
 
