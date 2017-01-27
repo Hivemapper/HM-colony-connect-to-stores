@@ -19,11 +19,17 @@ function connectToStores(Spec, Component = Spec) {
   if (!isFunction(Spec.getStores)) {
     throw new Error('connectToStores() expects the wrapped component to have a static getStores() method')
   }
+
   if (!isFunction(Spec.getPropsFromStores)) {
-    throw new Error('connectToStores() expects the wrapped component to have a static getPropsFromStores() method')
+    Spec.getPropsFromStores = () => {
+      return assign({}, ...Spec.getStores().map((store) => {
+        return store.getState();
+      }));
+    }
   }
 
   const StoreConnection = React.createClass({
+
     getInitialState() {
       return Spec.getPropsFromStores(this.props, this.context)
     },
@@ -47,14 +53,28 @@ function connectToStores(Spec, Component = Spec) {
     },
 
     onChange() {
-      this.setState(Spec.getPropsFromStores(this.props, this.context))
+      try {
+        this.setState(Spec.getPropsFromStores(this.props, this.context));
+      } catch (e) {
+        console.error(e);
+        if (typeof Rollbar !== 'undefined') {
+          Rollbar.error(e);
+        }
+      }
     },
 
     render() {
-      return React.createElement(
-        Component,
-        assign({}, this.props, this.state)
-      )
+      try {
+        return React.createElement(
+          Component,
+          assign({}, this.props, this.state)
+        );
+      } catch (e) {
+        console.error(e);
+        if (typeof Rollbar !== 'undefined') {
+          Rollbar.error(e);
+        }
+      }
     }
   })
 
