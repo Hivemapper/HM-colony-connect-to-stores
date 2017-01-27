@@ -23,12 +23,15 @@ function connectToStores(Spec, Component = Spec) {
   //   throw new Error('connectToStores() expects the wrapped component to have a static getPropsFromStores() method')
   // }
 
-  const StoreConnection = React.createClass({
-    getPropsFromStores() {
-      return assign({}, this.getStores().map((store) => {
+  if (!isFunction(Spec.getPropsFromStores)) {
+    Spec.getPropsFromStores = () => {
+      return assign({}, Spec.getStores().map((store) => {
         return store.getState();
       }));
-    },
+    }
+  }
+
+  const StoreConnection = React.createClass({
 
     getInitialState() {
       return Spec.getPropsFromStores(this.props, this.context)
