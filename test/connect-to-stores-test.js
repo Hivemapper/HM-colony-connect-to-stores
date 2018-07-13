@@ -31,7 +31,6 @@ export default {
       global.document = jsdom('<!doctype html><html><body></body></html>')
       global.window = global.document.parentWindow
       global.navigator = global.window.navigator
-      //require('react/lib/ExecutionEnvironment').canUseDOM = true
 
       alt.recycle()
     },
