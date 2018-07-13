@@ -14,54 +14,53 @@ const assign = (target, ...source) => {
   return target
 }
 
-function connectToStores(Spec, Component = Spec) {
+const getPropsFromStores = (Component, props, context) => {
+  return assign({}, ...Component.getStores(props, context).map((store) => {
+    return store.getState();
+  }));
+}
+
+function connectToStores(Component) {
   // Check for required static methods.
-  if (!isFunction(Spec.getStores)) {
+  if (!isFunction(Component.getStores)) {
     throw new Error('connectToStores() expects the wrapped component to have a static getStores() method')
   }
 
-  if (!isFunction(Spec.getPropsFromStores)) {
-    Spec.getPropsFromStores = () => {
-      return assign({}, ...Spec.getStores().map((store) => {
-        return store.getState();
-      }));
+  class StoreConnection extends React.Component {
+    constructor(props, context) {
+      super(props, context);
+      this.state = getPropsFromStores(Component, this.props, this.context);
+      this.onChange = this.onChange.bind(this);
     }
-  }
-
-  const StoreConnection = React.createClass({
-
-    getInitialState() {
-      return Spec.getPropsFromStores(this.props, this.context)
-    },
 
     componentWillReceiveProps(nextProps) {
-      this.setState(Spec.getPropsFromStores(nextProps, this.context))
-    },
+      this.setState(getPropsFromStores(Component, this.props, this.context))
+    }
 
     componentDidMount() {
-      const stores = Spec.getStores(this.props, this.context)
+      const stores = Component.getStores(this.props, this.context)
       this.storeListeners = stores.map((store) => {
         return store.listen(this.onChange)
       })
-      if (Spec.componentDidConnect) {
-        Spec.componentDidConnect(this.props, this.context)
+      if (Component.componentDidConnect) {
+        Component.componentDidConnect(this.props, this.context)
       }
-    },
+    }
 
     componentWillUnmount() {
       this.storeListeners.forEach(unlisten => unlisten())
-    },
+    }
 
     onChange() {
       try {
-        this.setState(Spec.getPropsFromStores(this.props, this.context));
+        this.setState(getPropsFromStores(Component, this.props, this.context));
       } catch (e) {
         console.error(e);
         if (typeof Rollbar !== 'undefined') {
           Rollbar.error(e);
         }
       }
-    },
+    }
 
     render() {
       try {
@@ -76,9 +75,9 @@ function connectToStores(Spec, Component = Spec) {
         }
       }
     }
-  })
+  }
 
-  return StoreConnection
+  return StoreConnection;
 }
 
-export default connectToStores
+export default connectToStores;
