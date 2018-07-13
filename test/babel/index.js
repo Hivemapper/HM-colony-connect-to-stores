@@ -5,9 +5,3 @@ const jsdom = require('jsdom').jsdom;
 global.document = jsdom('<!doctype html><html><body></body></html>')
 global.window = global.document.parentWindow
 global.navigator = global.window.navigator
-//global.window = {
-  //document: {
-    //createElement: function() {},
-  //},
-//};
-//global.document = global.window.document;
