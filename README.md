@@ -7,25 +7,10 @@ component via stores.
 
 Check out the [API Reference](http://alt.js.org/docs/) for full in-depth alt docs. For a high-level walk-through on flux, take a look at the [Getting Started](http://alt.js.org/guide/) guide.
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/goatslacker/alt?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-```
-// @todo Use real badges for this package.
-/*
-[![NPM version](https://badge.fury.io/js/alt.svg)](http://badge.fury.io/js/alt)
-[![Build Status](https://secure.travis-ci.org/goatslacker/alt.svg?branch=master)](http://travis-ci.org/goatslacker/alt)
-[![Coverage Status](https://img.shields.io/coveralls/goatslacker/alt.svg?style=flat)](https://coveralls.io/r/goatslacker/alt)
-[![Dependency Status](https://david-dm.org/goatslacker/alt.svg)](https://david-dm.org/goatslacker/alt)
-[![Download Count](https://img.shields.io/npm/dm/alt.svg?style=flat)](https://www.npmjs.com/package/alt)
-[![JS.ORG](https://img.shields.io/badge/js.org-alt-ffb400.svg?style=flat-square)](http://js.org)
-*/
-```
-
 ## How to use
 
-Expects the Component to have two static methods:
+Expects the Component to have the following static method:
  - getStores(): Should return an array of stores.
- - getPropsFromStores(props): Should return the props from the stores.
 
 **Using old React.createClass() style:**
 
@@ -35,9 +20,6 @@ const MyComponent = React.createClass({
     getStores(props) {
       return [myStore]
     },
-    getPropsFromStores(props) {
-      return myStore.getState()
-    }
   },
   render() {
     // Use this.props like normal ...
@@ -53,9 +35,6 @@ class MyComponent extends React.Component {
   static getStores(props) {
     return [myStore]
   }
-  static getPropsFromStores(props) {
-    return myStore.getState()
-  }
   render() {
     // Use this.props like normal ...
   }
@@ -70,9 +49,6 @@ MyComponent = connectToStores(MyComponent)
 class MyComponent extends React.Component {
   static getStores(props) {
     return [myStore]
-  }
-  static getPropsFromStores(props) {
-    return myStore.getState()
   }
   render() {
     // Use this.props like normal ...
