@@ -1,11 +1,13 @@
 import { jsdom } from 'jsdom'
 import Alt from 'alt'
-import React from 'react/addons'
+import React from 'react';
+import ReactDOM from 'react-dom'
+import ReactTestUtils from 'react-dom/test-utils'
+import ReactDOMServer from 'react-dom/server';
+import createReactClass from 'create-react-class'
 import connectToStores from '../'
 import { assert } from 'chai'
 import sinon from 'sinon'
-
-const { TestUtils } = React.addons
 
 const alt = new Alt()
 
@@ -29,7 +31,7 @@ export default {
       global.document = jsdom('<!doctype html><html><body></body></html>')
       global.window = global.document.parentWindow
       global.navigator = global.window.navigator
-      require('react/lib/ExecutionEnvironment').canUseDOM = true
+      //require('react/lib/ExecutionEnvironment').canUseDOM = true
 
       alt.recycle()
     },
@@ -45,22 +47,18 @@ export default {
         this.x = 1
       }, 'FooStore')
 
-      const getPropsFromStores = sinon.stub().returns(FooStore.getState())
-
-      const Child = connectToStores(React.createClass({
+      const Child = connectToStores(createReactClass({
         statics: {
           getStores(props) {
             return [FooStore]
           },
-
-          getPropsFromStores
         },
         render() {
           return <span>{this.props.x + this.props.y}</span>
         }
       }))
 
-      const Parent = React.createClass({
+      const Parent = createReactClass({
         getInitialState() {
           return { y: 0 }
         },
@@ -72,18 +70,16 @@ export default {
         }
       })
 
-      const node = TestUtils.renderIntoDocument(
+      const node = ReactTestUtils.renderIntoDocument(
         <Parent />
       )
 
-      assert(getPropsFromStores.callCount === 2, 'getPropsFromStores called twice')
-
-      const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
-      assert(span.getDOMNode().innerHTML === '2', 'prop passed in is correct')
+      const span = ReactTestUtils.findRenderedDOMComponentWithTag(node, 'span')
+      assert(span.innerHTML === '2', 'prop passed in is correct')
     },
 
     'missing the static getStores() method should throw'() {
-      const BadComponentOne = React.createClass({
+      const BadComponentOne = createReactClass({
         render() {
           return React.createElement('div', null, 'Bad')
         }
@@ -95,51 +91,30 @@ export default {
     'element mounts and unmounts'() {
       const div = document.createElement('div')
 
-      const LegacyComponent = connectToStores(React.createClass({
+      const LegacyComponent = connectToStores(createReactClass({
         statics: {
           getStores() {
             return [testStore]
           },
-          getPropsFromStores(props) {
-            return testStore.getState()
-          }
         },
         render() {
           return React.createElement('div', null, `Foo${this.props.delim}${this.props.foo}`)
         }
       }))
 
-      React.render(
+      ReactDOM.render(
         <LegacyComponent />
       , div)
 
-      React.unmountComponentAtNode(div)
-    },
-
-    'missing the static getPropsFromStores() method should throw'() {
-      const BadComponentTwo = React.createClass({
-        statics: {
-          getStores() {
-            return [testStore]
-          }
-        },
-        render() {
-          return React.createElement('div', null, 'Bad')
-        }
-      })
-
-      assert.throws(() => connectToStores(BadComponentTwo), 'expects the wrapped component to have a static getPropsFromStores() method')
+      ReactDOM.unmountComponentAtNode(div)
     },
 
     'createClass() component can get props from stores'() {
-      const LegacyComponent = React.createClass({
+      const LegacyComponent = createReactClass({
         statics: {
           getStores() {
             return [testStore]
           },
-          getPropsFromStores(props) {
-            return testStore.getState()
-          }
         },
         render() {
           return React.createElement('div', null, `Foo${this.props.delim}${this.props.foo}`)
@@ -148,19 +123,16 @@ export default {
 
       const WrappedComponent = connectToStores(LegacyComponent)
       const element = React.createElement(WrappedComponent, {delim: ': '})
-      const output = React.renderToStaticMarkup(element)
+      const output = ReactDOMServer.renderToStaticMarkup(element)
       assert.include(output, 'Foo: Bar')
     },
 
     'component can get use stores from props'() {
-      const LegacyComponent = React.createClass({
+      const LegacyComponent = createReactClass({
         statics: {
           getStores(props) {
             return [props.store]
           },
-          getPropsFromStores(props) {
-            return props.store.getState()
-          }
         },
         render() {
           return React.createElement('div', null, `Foo${this.props.delim}${this.props.foo}`)
@@ -169,56 +141,48 @@ export default {
 
       const WrappedComponent = connectToStores(LegacyComponent)
       const element = React.createElement(WrappedComponent, {delim: ': ', store: testStore})
-      const output = React.renderToStaticMarkup(element)
+      const output = ReactDOMServer.renderToStaticMarkup(element)
       assert.include(output, 'Foo: Bar')
     },
 
     'ES6 class component responds to store events'() {
       class ClassComponent extends React.Component {
+        static getStores() {
+          return [testStore]
+        }
         render() {
-          return <span foo={this.props.foo} />
+          return <span>{this.props.foo}</span>;
         }
       }
 
-      const WrappedComponent = connectToStores({
-        getStores() {
-          return [testStore]
-        },
-        getPropsFromStores(props) {
-          return testStore.getState()
-        }
-      }, ClassComponent)
+      const WrappedComponent = connectToStores(ClassComponent)
 
-      const node = TestUtils.renderIntoDocument(
+      const node = ReactTestUtils.renderIntoDocument(
         <WrappedComponent />
       )
 
       testActions.updateFoo('Baz')
 
-      const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
+      const span = ReactTestUtils.findRenderedDOMComponentWithTag(node, 'span')
 
-      assert(span.props.foo === 'Baz')
+      assert(span.innerHTML === 'Baz')
     },
 
     'componentDidConnect hook is called '() {
       let componentDidConnect = false
       class ClassComponent extends React.Component {
+        static getStores() {
+          return [testStore]
+        }
+        static componentDidConnect() {
+          componentDidConnect = true
+        }
         render() {
           return <span foo={this.props.foo} />
         }
       }
-      const WrappedComponent = connectToStores({
-        getStores() {
-          return [testStore]
-        },
-        getPropsFromStores(props) {
-          return testStore.getState()
-        },
-        componentDidConnect() {
-          componentDidConnect = true
-        }
-      }, ClassComponent)
-      const node = TestUtils.renderIntoDocument(
+      const WrappedComponent = connectToStores(ClassComponent)
+      const node = ReactTestUtils.renderIntoDocument(
         <WrappedComponent />
       )
       assert(componentDidConnect === true)
@@ -229,9 +193,6 @@ export default {
       class ClassComponent extends React.Component {
         static getStores() {
           return [testStore]
-        }
-        static getPropsFromStores(props) {
-          return testStore.getState()
         }
         static componentDidConnect() {
           testActions.updateFoo('Baz')
@@ -248,11 +209,11 @@ export default {
 
       const WrappedComponent = connectToStores(ClassComponent)
 
-      let node = TestUtils.renderIntoDocument(
+      let node = ReactTestUtils.renderIntoDocument(
         <WrappedComponent />
       )
 
-      const span = TestUtils.findRenderedDOMComponentWithTag(node, 'span')
+      const span = ReactTestUtils.findRenderedDOMComponentWithTag(node, 'span')
       assert(componentDidConnect === true)
     },
 
